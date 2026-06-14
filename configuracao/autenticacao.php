@@ -25,6 +25,10 @@ function usuario_atual(): ?array
 
 function entrar_usuario(string $email, string $senha): ?array
 {
+    if (!senha_tem_formato_valido($senha)) {
+        return null;
+    }
+
     $pdo = obter_conexao();
     $consulta = $pdo->prepare('SELECT * FROM Usuario WHERE email = :email LIMIT 1');
     $consulta->execute(['email' => mb_strtolower(trim($email), 'UTF-8')]);

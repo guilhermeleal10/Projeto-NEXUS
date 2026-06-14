@@ -31,6 +31,139 @@
     });
   }
 
+  function prepararCamposSenha() {
+    document.querySelectorAll('input[type="password"], input[data-password-input]').forEach(function (input, indice) {
+      if (!input.id) {
+        input.id = "senha_auto_" + indice;
+      }
+
+      input.setAttribute("inputmode", "numeric");
+      input.setAttribute("pattern", "[0-9]{6}");
+      input.setAttribute("minlength", "6");
+      input.setAttribute("maxlength", "6");
+      input.setAttribute("data-password-input", "");
+
+      var shell = input.closest(".input-shell");
+      if (!shell || shell.querySelector('[data-password-toggle][aria-controls="' + input.id + '"]')) {
+        return;
+      }
+
+      var botao = document.createElement("button");
+      botao.className = "password-toggle";
+      botao.type = "button";
+      botao.setAttribute("data-password-toggle", "");
+      botao.setAttribute("aria-controls", input.id);
+      botao.setAttribute("aria-label", "Mostrar senha");
+      botao.setAttribute("aria-pressed", "false");
+      botao.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">visibility</span>';
+      input.insertAdjacentElement("afterend", botao);
+    });
+  }
+
+  function mostrarNotificacaoSenha(formulario, mensagem) {
+    var aviso = formulario.querySelector("[data-password-feedback]");
+
+    if (!aviso) {
+      aviso = document.createElement("div");
+      aviso.className = "feedback is-visible error";
+      aviso.setAttribute("data-password-feedback", "");
+      aviso.setAttribute("role", "alert");
+      formulario.appendChild(aviso);
+    }
+
+    aviso.textContent = mensagem;
+    aviso.classList.add("is-visible", "error");
+  }
+
+  function limparNotificacaoSenha(formulario) {
+    var aviso = formulario.querySelector("[data-password-feedback]");
+
+    if (aviso) {
+      aviso.remove();
+    }
+  }
+
+  function senhaValida(input) {
+    if (!input.required && input.value === "") {
+      return true;
+    }
+
+    return /^\d{6}$/.test(input.value);
+  }
+
+  function configurarSenhas() {
+    prepararCamposSenha();
+
+    function alternarVisibilidadeSenha(botao) {
+      var input = document.getElementById(botao.getAttribute("aria-controls"));
+      if (!input) {
+        return;
+      }
+
+      var visivel = input.type === "text";
+      input.type = visivel ? "password" : "text";
+      botao.setAttribute("aria-pressed", visivel ? "false" : "true");
+      botao.setAttribute("aria-label", visivel ? "Mostrar senha" : "Esconder senha");
+
+      var icone = botao.querySelector(".material-symbols-outlined");
+      if (icone) {
+        icone.textContent = visivel ? "visibility" : "visibility_off";
+      }
+    }
+
+    function encontrarBotaoSenha(alvo) {
+      while (alvo && alvo !== document) {
+        if (alvo.matches && alvo.matches("[data-password-toggle]")) {
+          return alvo;
+        }
+
+        alvo = alvo.parentElement || alvo.parentNode;
+      }
+
+      return null;
+    }
+
+    document.addEventListener("input", function (evento) {
+      var input = evento.target;
+
+      if (!input.matches("[data-password-input]")) {
+        return;
+      }
+
+      input.value = input.value.replace(/\D/g, "").slice(0, 6);
+      var formulario = input.closest("form");
+      if (formulario && senhaValida(input)) {
+        limparNotificacaoSenha(formulario);
+      }
+    });
+
+    document.addEventListener("submit", function (evento) {
+      var formulario = evento.target;
+      var senhaInvalida = Array.from(formulario.querySelectorAll("[data-password-input]")).find(function (input) {
+        return !senhaValida(input);
+      });
+
+      if (!senhaInvalida) {
+        limparNotificacaoSenha(formulario);
+        return;
+      }
+
+      evento.preventDefault();
+      mostrarNotificacaoSenha(formulario, "Senha incorreta.");
+      senhaInvalida.focus();
+    });
+
+    document.addEventListener("click", function (evento) {
+      var botao = encontrarBotaoSenha(evento.target);
+
+      if (!botao) {
+        return;
+      }
+
+      alternarVisibilidadeSenha(botao);
+    });
+  }
+
   function configurarParticulas() {
     var canvas = document.querySelector("[data-particulas]");
     if (!canvas || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -94,6 +227,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     configurarMenuMobile();
     configurarConfirmacao();
+    configurarSenhas();
     configurarParticulas();
   });
 })();

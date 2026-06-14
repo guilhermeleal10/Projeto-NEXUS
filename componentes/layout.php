@@ -11,6 +11,10 @@ function menu_por_perfil(string $perfil): array
             ['secao' => 'dashboard', 'rotulo' => 'Dashboard', 'icone' => 'dashboard', 'url' => 'painel-administrador.php'],
             ['secao' => 'usuarios', 'rotulo' => 'Usuarios', 'icone' => 'group', 'url' => 'paginas/usuarios.php'],
             ['secao' => 'academias', 'rotulo' => 'Academias', 'icone' => 'business', 'url' => 'paginas/academias.php'],
+            ['secao' => 'alunos', 'rotulo' => 'Alunos', 'icone' => 'fitness_center', 'url' => 'paginas/alunos.php'],
+            ['secao' => 'matriculas', 'rotulo' => 'Matriculas', 'icone' => 'badge', 'url' => 'paginas/matriculas.php'],
+            ['secao' => 'mensalidades', 'rotulo' => 'Mensalidades', 'icone' => 'payments', 'url' => 'paginas/mensalidades.php'],
+            ['secao' => 'relatorios', 'rotulo' => 'Relatorios', 'icone' => 'monitoring', 'url' => 'paginas/relatorios-financeiros.php'],
             ['secao' => 'suporte', 'rotulo' => 'Suporte', 'icone' => 'support_agent', 'url' => 'paginas/solicitacoes-suporte.php'],
             ['secao' => 'configuracoes', 'rotulo' => 'Configuracoes', 'icone' => 'settings', 'url' => 'configuracoes.php'],
         ],
@@ -21,6 +25,7 @@ function menu_por_perfil(string $perfil): array
             ['secao' => 'relatorios', 'rotulo' => 'Relatorios', 'icone' => 'monitoring', 'url' => 'paginas/relatorios-financeiros.php'],
             ['secao' => 'alunos', 'rotulo' => 'Alunos', 'icone' => 'fitness_center', 'url' => 'paginas/alunos.php'],
             ['secao' => 'matriculas', 'rotulo' => 'Matriculas', 'icone' => 'badge', 'url' => 'paginas/matriculas.php'],
+            ['secao' => 'mensalidades', 'rotulo' => 'Mensalidades', 'icone' => 'payments', 'url' => 'paginas/mensalidades.php'],
             ['secao' => 'configuracoes', 'rotulo' => 'Configuracoes', 'icone' => 'settings', 'url' => 'configuracoes.php'],
         ],
         'ATENDENTE' => [
@@ -33,10 +38,10 @@ function menu_por_perfil(string $perfil): array
         ],
         'CLIENTE' => [
             ['secao' => 'dashboard', 'rotulo' => 'Dashboard', 'icone' => 'dashboard', 'url' => 'painel-cliente.php'],
-            ['secao' => 'dados-aluno', 'rotulo' => 'Meus dados', 'icone' => 'person', 'url' => 'painel-cliente.php#dados-aluno'],
-            ['secao' => 'matricula', 'rotulo' => 'Minha matricula', 'icone' => 'badge', 'url' => 'painel-cliente.php#matricula'],
-            ['secao' => 'mensalidades', 'rotulo' => 'Mensalidades', 'icone' => 'payments', 'url' => 'painel-cliente.php#mensalidades'],
-            ['secao' => 'historico', 'rotulo' => 'Historico', 'icone' => 'history', 'url' => 'painel-cliente.php#historico'],
+            ['secao' => 'dados-aluno', 'rotulo' => 'Meus dados', 'icone' => 'person', 'url' => 'paginas/meus-dados.php'],
+            ['secao' => 'matricula', 'rotulo' => 'Minha matricula', 'icone' => 'badge', 'url' => 'paginas/minha-matricula.php'],
+            ['secao' => 'mensalidades', 'rotulo' => 'Mensalidades', 'icone' => 'payments', 'url' => 'paginas/minhas-mensalidades.php'],
+            ['secao' => 'historico', 'rotulo' => 'Historico', 'icone' => 'history', 'url' => 'paginas/meu-historico.php'],
             ['secao' => 'suporte', 'rotulo' => 'Suporte', 'icone' => 'support_agent', 'url' => 'paginas/solicitacoes-suporte.php'],
             ['secao' => 'configuracoes', 'rotulo' => 'Configuracoes', 'icone' => 'settings', 'url' => 'configuracoes.php'],
         ],
@@ -70,9 +75,9 @@ function cabecalho_pagina(string $titulo, string $secao, array $usuario): void
     $versaoEstilo = (string) filemtime(__DIR__ . '/../recursos/css/estilo.css');
     $versaoContraste = (string) filemtime(__DIR__ . '/../recursos/css/style.css');
     $acaoRapida = match ($usuario['perfil']) {
-        'ADMIN' => ['url' => 'paginas/usuarios.php', 'rotulo' => 'Novo usuario'],
-        'GERENTE' => ['url' => 'paginas/receitas.php', 'rotulo' => 'Nova receita'],
-        'ATENDENTE' => ['url' => 'paginas/alunos.php', 'rotulo' => 'Novo aluno'],
+        'ADMIN' => ['url' => 'paginas/usuarios.php?novo=1', 'rotulo' => 'Novo usuario'],
+        'GERENTE' => ['url' => 'paginas/receitas.php?novo=1', 'rotulo' => 'Nova receita'],
+        'ATENDENTE' => ['url' => 'paginas/alunos.php?novo=1', 'rotulo' => 'Novo aluno'],
         default => null,
     };
     ?>
@@ -157,11 +162,13 @@ function cabecalho_pagina(string $titulo, string $secao, array $usuario): void
 function rodape_pagina(): void
 {
     $base = caminho_base();
+    $versaoAplicacao = (string) filemtime(__DIR__ . '/../recursos/js/aplicacao.js');
+    $versaoAcessibilidade = (string) filemtime(__DIR__ . '/../recursos/js/acessibilidade.js');
     ?>
     </main>
   </div>
-  <script src="<?= h($base) ?>recursos/js/aplicacao.js"></script>
-  <script src="<?= h($base) ?>recursos/js/acessibilidade.js"></script>
+  <script src="<?= h($base) ?>recursos/js/aplicacao.js?v=<?= h($versaoAplicacao) ?>"></script>
+  <script src="<?= h($base) ?>recursos/js/acessibilidade.js?v=<?= h($versaoAcessibilidade) ?>"></script>
 </body>
 </html>
     <?php

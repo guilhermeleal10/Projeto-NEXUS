@@ -43,12 +43,16 @@ CREATE TABLE IF NOT EXISTS Aluno (
 
 CREATE TABLE IF NOT EXISTS Matricula (
   idMatricula INT AUTO_INCREMENT PRIMARY KEY,
+  codigoMatricula VARCHAR(24) NOT NULL UNIQUE,
   dataMatricula DATE NOT NULL,
   status ENUM('Ativa', 'Cancelada', 'Trancada') NOT NULL DEFAULT 'Ativa',
+  plano ENUM('Basico', 'Maromba', 'Shape') NOT NULL DEFAULT 'Basico',
+  valorPlano DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   idAluno INT NOT NULL,
   idAcademia INT NOT NULL,
   idAtendente INT NULL,
   criadoEm TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (valorPlano >= 0),
   CONSTRAINT fk_matricula_aluno
     FOREIGN KEY (idAluno) REFERENCES Aluno(idAluno)
     ON UPDATE CASCADE
@@ -175,19 +179,25 @@ ON DUPLICATE KEY UPDATE
   dataNascimento = VALUES(dataNascimento),
   idAcademia = VALUES(idAcademia);
 
-INSERT INTO Matricula (idMatricula, dataMatricula, status, idAluno, idAcademia, idAtendente) VALUES
-(1, '2026-03-05', 'Ativa', 1, 1, 3),
-(2, '2026-04-11', 'Ativa', 2, 1, 3),
-(3, '2026-05-02', 'Ativa', 3, 2, 5),
-(4, '2026-05-18', 'Trancada', 4, 2, 5)
-ON DUPLICATE KEY UPDATE status = VALUES(status);
+INSERT INTO Matricula (idMatricula, codigoMatricula, dataMatricula, status, plano, valorPlano, idAluno, idAcademia, idAtendente) VALUES
+(1, 'NX-202603-0001-0001', '2026-03-05', 'Ativa', 'Shape', 99.99, 1, 1, 3),
+(2, 'NX-202604-0002-0002', '2026-04-11', 'Ativa', 'Maromba', 49.90, 2, 1, 3),
+(3, 'NX-202605-0003-0003', '2026-05-02', 'Ativa', 'Shape', 99.99, 3, 2, 5),
+(4, 'NX-202605-0004-0004', '2026-05-18', 'Trancada', 'Basico', 0.00, 4, 2, 5)
+ON DUPLICATE KEY UPDATE
+  codigoMatricula = VALUES(codigoMatricula),
+  status = VALUES(status),
+  plano = VALUES(plano),
+  valorPlano = VALUES(valorPlano);
 
 INSERT INTO Mensalidade (idMensalidade, valor, dataVencimento, dataPagamento, status, idMatricula) VALUES
-(1, 129.90, '2026-06-10', '2026-06-06', 'Pago', 1),
-(2, 129.90, '2026-06-12', NULL, 'Pendente', 2),
-(3, 99.90, '2026-06-05', NULL, 'Atrasado', 3),
-(4, 99.90, '2026-06-20', NULL, 'Pendente', 4)
-ON DUPLICATE KEY UPDATE status = VALUES(status);
+(1, 99.99, '2026-06-10', '2026-06-06', 'Pago', 1),
+(2, 49.90, '2026-06-12', NULL, 'Pendente', 2),
+(3, 99.99, '2026-06-05', NULL, 'Atrasado', 3),
+(4, 0.00, '2026-06-20', NULL, 'Pendente', 4)
+ON DUPLICATE KEY UPDATE
+  valor = VALUES(valor),
+  status = VALUES(status);
 
 INSERT INTO Receita (idReceita, descricao, valor, dataReceita, idAcademia) VALUES
 (1, 'Mensalidades plano performance', 8200.00, '2026-06-02', 1),

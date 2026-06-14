@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($acao === 'verificar_senha') {
             $senhaAtual = (string) ($_POST['senha_atual'] ?? '');
+            validar_senha_sistema($senhaAtual);
 
             if (!hash_equals((string) $usuario['senhaCriptografada'], senha_criptografada($senhaAtual))) {
                 throw new RuntimeException('A senha informada nao confere.');
@@ -67,12 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $novaSenha = (string) ($_POST['nova_senha'] ?? '');
             $confirmarSenha = (string) ($_POST['confirmar_senha'] ?? '');
 
+            validar_senha_sistema($senhaAtual);
+            validar_senha_sistema($novaSenha);
+
             if (!hash_equals((string) $usuario['senhaCriptografada'], senha_criptografada($senhaAtual))) {
                 throw new RuntimeException('A senha atual nao confere.');
-            }
-
-            if (mb_strlen($novaSenha, 'UTF-8') < 6) {
-                throw new RuntimeException('A nova senha deve ter pelo menos 6 caracteres.');
             }
 
             if ($novaSenha !== $confirmarSenha) {
@@ -138,7 +138,7 @@ cabecalho_pagina('Configurações', 'configuracoes', $usuario);
     <div class="panel-header">
       <h2>Dados da conta</h2>
     </div>
-    <form class="crud-form" method="post">
+    <form class="crud-form" method="post" novalidate>
       <input type="hidden" name="acao" value="atualizar_conta">
       <div class="form-grid">
         <div class="field">
@@ -171,11 +171,17 @@ cabecalho_pagina('Configurações', 'configuracoes', $usuario);
     <div class="panel-header">
       <h2>Verificar senha</h2>
     </div>
-    <form class="crud-form" method="post">
+    <form class="crud-form" method="post" novalidate>
       <input type="hidden" name="acao" value="verificar_senha">
       <div class="field">
         <label for="verificar_senha_atual">Senha atual</label>
-        <input id="verificar_senha_atual" name="senha_atual" type="password" autocomplete="current-password" required>
+        <div class="input-shell password-shell">
+          <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+          <input id="verificar_senha_atual" name="senha_atual" type="password" autocomplete="current-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+          <button class="password-toggle" type="button" data-password-toggle aria-controls="verificar_senha_atual" aria-label="Mostrar senha" aria-pressed="false">
+            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+          </button>
+        </div>
       </div>
       <div class="form-actions">
         <button class="btn btn-primary" type="submit">
@@ -194,20 +200,38 @@ cabecalho_pagina('Configurações', 'configuracoes', $usuario);
     <div class="panel-header">
       <h2>Alterar senha</h2>
     </div>
-    <form class="crud-form" method="post">
+    <form class="crud-form" method="post" novalidate>
       <input type="hidden" name="acao" value="alterar_senha">
       <div class="form-grid">
         <div class="field full">
           <label for="senha_atual">Senha atual</label>
-          <input id="senha_atual" name="senha_atual" type="password" autocomplete="current-password" required>
+          <div class="input-shell password-shell">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            <input id="senha_atual" name="senha_atual" type="password" autocomplete="current-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+            <button class="password-toggle" type="button" data-password-toggle aria-controls="senha_atual" aria-label="Mostrar senha" aria-pressed="false">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
+          </div>
         </div>
         <div class="field">
           <label for="nova_senha">Nova senha</label>
-          <input id="nova_senha" name="nova_senha" type="password" autocomplete="new-password" minlength="6" required>
+          <div class="input-shell password-shell">
+            <span class="material-symbols-outlined" aria-hidden="true">lock_reset</span>
+            <input id="nova_senha" name="nova_senha" type="password" autocomplete="new-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+            <button class="password-toggle" type="button" data-password-toggle aria-controls="nova_senha" aria-label="Mostrar senha" aria-pressed="false">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
+          </div>
         </div>
         <div class="field">
           <label for="confirmar_senha">Confirmar senha</label>
-          <input id="confirmar_senha" name="confirmar_senha" type="password" autocomplete="new-password" minlength="6" required>
+          <div class="input-shell password-shell">
+            <span class="material-symbols-outlined" aria-hidden="true">lock_reset</span>
+            <input id="confirmar_senha" name="confirmar_senha" type="password" autocomplete="new-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+            <button class="password-toggle" type="button" data-password-toggle aria-controls="confirmar_senha" aria-label="Mostrar senha" aria-pressed="false">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
+          </div>
         </div>
       </div>
       <div class="form-actions">

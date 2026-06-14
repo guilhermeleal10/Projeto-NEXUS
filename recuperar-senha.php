@@ -8,6 +8,8 @@ $mensagem = '';
 $usuarioReconhecido = null;
 $versaoEstilo = (string) filemtime(__DIR__ . '/recursos/css/estilo.css');
 $versaoContraste = (string) filemtime(__DIR__ . '/recursos/css/style.css');
+$versaoAplicacao = (string) filemtime(__DIR__ . '/recursos/js/aplicacao.js');
+$versaoAcessibilidade = (string) filemtime(__DIR__ . '/recursos/js/acessibilidade.js');
 
 if (!empty($_GET['cancelar'])) {
     unset($_SESSION['recuperar_usuario'], $_SESSION['recuperar_validade']);
@@ -63,9 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $novaSenha = (string) ($_POST['nova_senha'] ?? '');
             $confirmarSenha = (string) ($_POST['confirmar_senha'] ?? '');
 
-            if (mb_strlen($novaSenha, 'UTF-8') < 6) {
-                throw new RuntimeException('A nova senha deve ter pelo menos 6 caracteres.');
-            }
+            validar_senha_sistema($novaSenha);
 
             if ($novaSenha !== $confirmarSenha) {
                 throw new RuntimeException('A confirmacao da senha nao confere.');
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <?php if (!$usuarioReconhecido): ?>
-      <form class="form-stack" method="post">
+      <form class="form-stack" method="post" novalidate>
         <input type="hidden" name="acao" value="reconhecer_usuario">
         <div class="field">
           <label for="email">E-mail</label>
@@ -164,13 +164,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="list-item"><strong>Perfil</strong><span><?= h($usuarioReconhecido['perfil']) ?></span></div>
       </div>
 
-      <form class="form-stack" method="post">
+      <form class="form-stack" method="post" novalidate>
         <input type="hidden" name="acao" value="redefinir_senha">
         <div class="field">
           <label for="nova_senha">Nova senha</label>
           <div class="input-shell">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span>
-            <input id="nova_senha" name="nova_senha" type="password" autocomplete="new-password" minlength="6" required>
+            <input id="nova_senha" name="nova_senha" type="password" autocomplete="new-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+            <button class="password-toggle" type="button" data-password-toggle aria-controls="nova_senha" aria-label="Mostrar senha" aria-pressed="false">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
           </div>
         </div>
 
@@ -178,7 +181,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label for="confirmar_senha">Confirmar senha</label>
           <div class="input-shell">
             <span class="material-symbols-outlined" aria-hidden="true">lock_reset</span>
-            <input id="confirmar_senha" name="confirmar_senha" type="password" autocomplete="new-password" minlength="6" required>
+            <input id="confirmar_senha" name="confirmar_senha" type="password" autocomplete="new-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+            <button class="password-toggle" type="button" data-password-toggle aria-controls="confirmar_senha" aria-label="Mostrar senha" aria-pressed="false">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
           </div>
         </div>
 
@@ -203,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </main>
 
-  <script src="recursos/js/aplicacao.js"></script>
-  <script src="recursos/js/acessibilidade.js"></script>
+  <script src="recursos/js/aplicacao.js?v=<?= h($versaoAplicacao) ?>"></script>
+  <script src="recursos/js/acessibilidade.js?v=<?= h($versaoAcessibilidade) ?>"></script>
 </body>
 </html>

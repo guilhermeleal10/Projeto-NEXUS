@@ -18,6 +18,37 @@ function dinheiro(mixed $valor): string
     return 'R$ ' . number_format((float) $valor, 2, ',', '.');
 }
 
+function planos_matricula(): array
+{
+    return [
+        'Basico' => ['rotulo' => 'Basico', 'valor' => 0.00],
+        'Maromba' => ['rotulo' => 'Maromba', 'valor' => 49.90],
+        'Shape' => ['rotulo' => 'Shape', 'valor' => 99.99],
+    ];
+}
+
+function valor_plano(mixed $plano): float
+{
+    $planos = planos_matricula();
+    return (float) ($planos[(string) $plano]['valor'] ?? 0.00);
+}
+
+function rotulo_plano(mixed $plano): string
+{
+    $planoTexto = (string) $plano;
+    $planos = planos_matricula();
+
+    if (!isset($planos[$planoTexto])) {
+        return $planoTexto ?: 'Nao informado';
+    }
+
+    if ((float) $planos[$planoTexto]['valor'] <= 0) {
+        return $planos[$planoTexto]['rotulo'] . ' - gratuito';
+    }
+
+    return $planos[$planoTexto]['rotulo'] . ' - ' . dinheiro($planos[$planoTexto]['valor']);
+}
+
 function altura_grafico(mixed $valor, mixed $maximo, int $alturaMaxima = 230, int $alturaMinima = 42): int
 {
     $valorNumerico = max((float) $valor, 0);
@@ -159,6 +190,23 @@ function badge_status(?string $status): string
 {
     $texto = $status ?: 'Sem status';
     return '<span class="status-badge ' . classe_status($texto) . '">' . h($texto) . '</span>';
+}
+
+function mensagem_regra_senha(): string
+{
+    return 'Senha incorreta.';
+}
+
+function senha_tem_formato_valido(string $senha): bool
+{
+    return preg_match('/^\d{6}$/', $senha) === 1;
+}
+
+function validar_senha_sistema(string $senha): void
+{
+    if (!senha_tem_formato_valido($senha)) {
+        throw new RuntimeException(mensagem_regra_senha());
+    }
 }
 
 function senha_criptografada(string $senha): string

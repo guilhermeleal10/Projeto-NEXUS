@@ -6,6 +6,8 @@ $erro = '';
 $usuarioLogado = usuario_atual();
 $versaoEstilo = (string) filemtime(__DIR__ . '/recursos/css/estilo.css');
 $versaoContraste = (string) filemtime(__DIR__ . '/recursos/css/style.css');
+$versaoAplicacao = (string) filemtime(__DIR__ . '/recursos/js/aplicacao.js');
+$versaoAcessibilidade = (string) filemtime(__DIR__ . '/recursos/js/acessibilidade.js');
 
 if ($usuarioLogado) {
     header('Location: ' . painel_por_perfil((string) $usuarioLogado['perfil']));
@@ -74,9 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div class="field">
         <label for="senha">Senha</label>
-        <div class="input-shell">
+        <div class="input-shell password-shell">
           <span class="material-symbols-outlined" aria-hidden="true">lock</span>
-          <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="••••••••" required>
+          <input id="senha" name="senha" type="password" autocomplete="current-password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" data-password-input required>
+          <button class="password-toggle" type="button" data-password-toggle aria-controls="senha" aria-label="Mostrar senha" aria-pressed="false">
+            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+          </button>
         </div>
       </div>
 
@@ -98,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
   </main>
 
-  <script src="recursos/js/aplicacao.js"></script>
-  <script src="recursos/js/acessibilidade.js"></script>
+  <script src="recursos/js/aplicacao.js?v=<?= h($versaoAplicacao) ?>"></script>
+  <script src="recursos/js/acessibilidade.js?v=<?= h($versaoAcessibilidade) ?>"></script>
 </body>
 </html>

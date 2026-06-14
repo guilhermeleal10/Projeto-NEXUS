@@ -40,6 +40,45 @@ function coluna_permite_nulo(PDO $pdo, string $tabela, string $coluna): bool
     return $consulta->fetchColumn() === 'YES';
 }
 
+function coluna_existe(PDO $pdo, string $tabela, string $coluna): bool
+{
+    $consulta = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tabela AND COLUMN_NAME = :coluna'
+    );
+    $consulta->execute(['tabela' => $tabela, 'coluna' => $coluna]);
+
+    return (int) $consulta->fetchColumn() > 0;
+}
+
+function indice_existe(PDO $pdo, string $tabela, string $indice): bool
+{
+    $consulta = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tabela AND INDEX_NAME = :indice'
+    );
+    $consulta->execute(['tabela' => $tabela, 'indice' => $indice]);
+
+    return (int) $consulta->fetchColumn() > 0;
+}
+
+function indice_unico_coluna_existe(PDO $pdo, string $tabela, string $coluna): bool
+{
+    $consulta = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = :tabela
+           AND COLUMN_NAME = :coluna
+           AND NON_UNIQUE = 0'
+    );
+    $consulta->execute(['tabela' => $tabela, 'coluna' => $coluna]);
+
+    return (int) $consulta->fetchColumn() > 0;
+}
+
 function regra_exclusao_chave(PDO $pdo, string $tabela, string $chave): ?string
 {
     $consulta = $pdo->prepare(
@@ -79,6 +118,63 @@ function ajustar_chave_usuario_opcional(PDO $pdo, string $tabela, string $coluna
     );
 }
 
+function ajustar_matricula_planos(PDO $pdo): void
+{
+    if (!tabela_existe($pdo, 'Matricula')) {
+        return;
+    }
+
+    if (!coluna_existe($pdo, 'Matricula', 'codigoMatricula')) {
+        $pdo->exec('ALTER TABLE Matricula ADD codigoMatricula VARCHAR(24) NULL AFTER idMatricula');
+    }
+
+    $pdo->exec(
+        "UPDATE Matricula
+         SET codigoMatricula = CONCAT('NX-', DATE_FORMAT(COALESCE(dataMatricula, CURDATE()), '%Y%m'), '-', LPAD(idAluno, 4, '0'), '-', LPAD(idMatricula, 4, '0'))
+         WHERE codigoMatricula IS NULL OR codigoMatricula = ''"
+    );
+
+    $pdo->exec('ALTER TABLE Matricula MODIFY codigoMatricula VARCHAR(24) NOT NULL');
+
+    if (!indice_existe($pdo, 'Matricula', 'idx_matricula_codigo') && !indice_unico_coluna_existe($pdo, 'Matricula', 'codigoMatricula')) {
+        $pdo->exec('CREATE UNIQUE INDEX idx_matricula_codigo ON Matricula (codigoMatricula)');
+    }
+
+    $planoCriado = false;
+
+    if (!coluna_existe($pdo, 'Matricula', 'plano')) {
+        $pdo->exec("ALTER TABLE Matricula ADD plano ENUM('Basico', 'Maromba', 'Shape') NOT NULL DEFAULT 'Basico' AFTER status");
+        $planoCriado = true;
+    }
+
+    if (!coluna_existe($pdo, 'Matricula', 'valorPlano')) {
+        $pdo->exec('ALTER TABLE Matricula ADD valorPlano DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER plano');
+        $planoCriado = true;
+    }
+
+    if ($planoCriado) {
+        $pdo->exec(
+            "UPDATE Matricula m
+             LEFT JOIN (
+               SELECT idMatricula, MAX(valor) AS maiorValor
+               FROM Mensalidade
+               GROUP BY idMatricula
+             ) mensalidade ON mensalidade.idMatricula = m.idMatricula
+             SET
+               m.plano = CASE
+                 WHEN COALESCE(mensalidade.maiorValor, 0) >= 90 THEN 'Shape'
+                 WHEN COALESCE(mensalidade.maiorValor, 0) >= 40 THEN 'Maromba'
+                 ELSE 'Basico'
+               END,
+               m.valorPlano = CASE
+                 WHEN COALESCE(mensalidade.maiorValor, 0) >= 90 THEN 99.99
+                 WHEN COALESCE(mensalidade.maiorValor, 0) >= 40 THEN 49.90
+                 ELSE 0.00
+               END"
+        );
+    }
+}
+
 function aplicar_migracoes(PDO $pdo): void
 {
     static $executado = false;
@@ -91,6 +187,7 @@ function aplicar_migracoes(PDO $pdo): void
     ajustar_chave_usuario_opcional($pdo, 'Matricula', 'idAtendente', 'fk_matricula_atendente');
     ajustar_chave_usuario_opcional($pdo, 'RelatorioFinanceiro', 'idGerente', 'fk_relatorio_gerente');
     ajustar_chave_usuario_opcional($pdo, 'SolicitacaoSuporte', 'idUsuarioSolicitante', 'fk_suporte_usuario');
+    ajustar_matricula_planos($pdo);
 }
 
 function obter_conexao(): PDO
