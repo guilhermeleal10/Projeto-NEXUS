@@ -1,0 +1,112 @@
+:root {
+  --bg: #000;
+  --surface: #000;
+  --surface-2: #050505;
+  --card: #050505;
+  --card-high: #111;
+  --line: #fff;
+  --text: #fff;
+  --muted: #f7f7f7;
+  --primary: #ffea00;
+  --primary-soft: #ffea00;
+  --pink: #00f5ff;
+  --red: #ff4040;
+  --success: #00ff66;
+  --warning: #ffea00;
+  --error: #ff6666;
+  --glow: none;
+  --glow-strong: none;
+}
+
+body {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+body::before,
+.particle-canvas,
+.login-visual {
+  display: none !important;
+}
+
+a {
+  color: #ffea00;
+}
+
+.sidebar,
+.topbar,
+.login-card,
+.card,
+.stat-card,
+.panel,
+.list-item,
+.table-wrap,
+.config-card,
+.input-shell,
+.field input,
+.field select,
+.field textarea {
+  background: #000 !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link.is-active,
+.accessibility-btn:hover,
+.accessibility-btn:focus-visible,
+.accessibility-btn.is-active {
+  color: #000 !important;
+  background: #ffea00 !important;
+  box-shadow: none !important;
+}
+
+.btn-primary,
+.accessibility-btn.is-active {
+  color: #000 !important;
+  background: #ffea00 !important;
+  border-color: #ffea00 !important;
+}
+
+.btn-ghost,
+.accessibility-btn {
+  color: #fff !important;
+  background: #000 !important;
+  border-color: #fff !important;
+}
+
+th,
+.crud-table-wrap th:last-child {
+  color: #000 !important;
+  background: #ffea00 !important;
+}
+
+td,
+.crud-table-wrap td:last-child {
+  color: #fff !important;
+  background: #000 !important;
+}
+
+tbody tr:hover {
+  background: #1f1f1f !important;
+}
+
+input,
+select,
+textarea {
+  color: #fff !important;
+}
+
+::placeholder {
+  color: #ddd !important;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #ffea00 !important;
+  outline-offset: 3px;
+}
