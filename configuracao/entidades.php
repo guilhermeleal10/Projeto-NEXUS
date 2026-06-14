@@ -62,7 +62,9 @@ $entidades = [
         'ordem' => 'idAluno DESC',
         'campos' => [
             ['nome' => 'nome', 'rotulo' => 'Nome', 'tipo' => 'text', 'obrigatorio' => true],
-            ['nome' => 'idUsuario', 'rotulo' => 'Usuario de acesso', 'tipo' => 'select', 'relacao' => ['tabela' => 'Usuario', 'id' => 'idUsuario', 'rotulo' => "CONCAT(nome, ' ', sobrenome, ' (', email, ')')", 'filtro' => "perfil = 'CLIENTE' AND idUsuario NOT IN (SELECT idUsuario FROM Aluno WHERE idUsuario IS NOT NULL)"]],
+            ['nome' => 'responsavelCadastro', 'rotulo' => 'Responsavel pelo cadastro', 'tipo' => 'text', 'virtual' => true, 'somente_leitura' => true, 'apenas_novo' => true, 'tabela_listagem' => false, 'ocultar_para_perfis' => ['ADMIN', 'GERENTE']],
+            ['nome' => 'senhaCliente', 'rotulo' => 'Senha do cliente', 'tipo' => 'password', 'obrigatorio' => true, 'virtual' => true, 'apenas_novo' => true, 'tabela_listagem' => false, 'ocultar_para_perfis' => ['ADMIN', 'GERENTE']],
+            ['nome' => 'idUsuario', 'rotulo' => 'Usuario de acesso', 'tipo' => 'select', 'ocultar_para_perfis' => ['ATENDENTE'], 'relacao' => ['tabela' => 'Usuario', 'id' => 'idUsuario', 'rotulo' => "CONCAT(nome, ' ', sobrenome, ' (', email, ')')", 'filtro' => "perfil = 'CLIENTE' AND idUsuario NOT IN (SELECT idUsuario FROM Aluno WHERE idUsuario IS NOT NULL)"]],
             ['nome' => 'cpf', 'rotulo' => 'CPF', 'tipo' => 'text', 'obrigatorio' => true],
             ['nome' => 'telefone', 'rotulo' => 'Telefone', 'tipo' => 'tel', 'obrigatorio' => true],
             ['nome' => 'email', 'rotulo' => 'E-mail', 'tipo' => 'email', 'obrigatorio' => true],

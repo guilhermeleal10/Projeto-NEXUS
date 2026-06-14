@@ -17,6 +17,51 @@
     });
   }
 
+  function configurarBarraLateral() {
+    var botao = document.querySelector("[data-sidebar-collapse-toggle]");
+    if (!botao) {
+      return;
+    }
+
+    var chavePreferencia = "nexusSidebarCollapsed";
+
+    function atualizarBotao(colapsada) {
+      botao.setAttribute("aria-pressed", colapsada ? "true" : "false");
+      botao.setAttribute("aria-label", colapsada ? "Mostrar barra lateral" : "Esconder barra lateral");
+      botao.setAttribute("title", colapsada ? "Mostrar barra lateral" : "Esconder barra lateral");
+
+      var icone = botao.querySelector(".material-symbols-outlined");
+      if (icone) {
+        icone.textContent = colapsada ? "left_panel_open" : "left_panel_close";
+      }
+    }
+
+    function definirEstado(colapsada) {
+      document.body.classList.toggle("sidebar-collapsed", colapsada);
+      atualizarBotao(colapsada);
+
+      try {
+        window.localStorage.setItem(chavePreferencia, colapsada ? "1" : "0");
+      } catch (erro) {
+        return;
+      }
+    }
+
+    var estadoSalvo = false;
+    try {
+      estadoSalvo = window.localStorage.getItem(chavePreferencia) === "1";
+    } catch (erro) {
+      estadoSalvo = false;
+    }
+
+    document.body.classList.toggle("sidebar-collapsed", estadoSalvo);
+    atualizarBotao(estadoSalvo);
+
+    botao.addEventListener("click", function () {
+      definirEstado(!document.body.classList.contains("sidebar-collapsed"));
+    });
+  }
+
   function configurarConfirmacao() {
     document.addEventListener("submit", function (evento) {
       var formulario = evento.target;
@@ -226,6 +271,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     configurarMenuMobile();
+    configurarBarraLateral();
     configurarConfirmacao();
     configurarSenhas();
     configurarParticulas();

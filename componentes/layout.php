@@ -126,6 +126,9 @@ function cabecalho_pagina(string $titulo, string $secao, array $usuario): void
       <button class="btn btn-ghost menu-toggle" type="button" data-menu-toggle aria-label="Abrir menu">
         <span class="material-symbols-outlined" aria-hidden="true">menu</span>
       </button>
+      <button class="btn btn-ghost sidebar-collapse-toggle" type="button" data-sidebar-collapse-toggle aria-label="Esconder barra lateral" aria-pressed="false" title="Esconder barra lateral">
+        <span class="material-symbols-outlined" aria-hidden="true">left_panel_close</span>
+      </button>
       <h1><?= h($titulo) ?></h1>
       <div class="topbar-actions">
         <div class="accessibility-tools" role="toolbar" aria-label="Acessibilidade">

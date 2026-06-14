@@ -150,6 +150,89 @@ function valor_plano_matricula(PDO $pdo, int $idMatricula): float
     return $valor === false ? 0.00 : (float) $valor;
 }
 
+function dividir_nome_cliente(string $nomeCompleto): array
+{
+    $partes = preg_split('/\s+/', trim($nomeCompleto)) ?: [];
+    $nome = array_shift($partes) ?: 'Cliente';
+    $sobrenome = trim(implode(' ', $partes));
+
+    return [
+        'nome' => $nome,
+        'sobrenome' => $sobrenome !== '' ? $sobrenome : 'NEXUS',
+    ];
+}
+
+function criar_usuario_cliente_para_aluno(PDO $pdo, array $dadosAluno, string $senha): int
+{
+    validar_senha_sistema($senha);
+
+    $email = mb_strtolower(trim((string) ($dadosAluno['email'] ?? '')), 'UTF-8');
+    $cpf = trim((string) ($dadosAluno['cpf'] ?? ''));
+    $telefone = trim((string) ($dadosAluno['telefone'] ?? ''));
+    $nomes = dividir_nome_cliente((string) ($dadosAluno['nome'] ?? 'Cliente'));
+
+    if ($email === '' || $cpf === '' || $telefone === '') {
+        throw new RuntimeException('Informe CPF, e-mail e telefone para criar o acesso do cliente.');
+    }
+
+    $consulta = $pdo->prepare('SELECT * FROM Usuario WHERE email = :email OR cpf = :cpf');
+    $consulta->execute(['email' => $email, 'cpf' => $cpf]);
+    $usuarios = $consulta->fetchAll();
+
+    if (count($usuarios) > 1) {
+        throw new RuntimeException('CPF e e-mail ja pertencem a usuarios diferentes.');
+    }
+
+    if (count($usuarios) === 1) {
+        $usuarioExistente = $usuarios[0];
+
+        if (($usuarioExistente['perfil'] ?? '') !== 'CLIENTE') {
+            throw new RuntimeException('CPF ou e-mail ja pertence a um usuario interno do sistema.');
+        }
+
+        if ((string) $usuarioExistente['email'] !== $email || (string) $usuarioExistente['cpf'] !== $cpf) {
+            throw new RuntimeException('CPF ou e-mail ja pertence a outro cliente.');
+        }
+
+        $vinculo = $pdo->prepare('SELECT COUNT(*) FROM Aluno WHERE idUsuario = :idUsuario');
+        $vinculo->execute(['idUsuario' => $usuarioExistente['idUsuario']]);
+
+        if ((int) $vinculo->fetchColumn() > 0) {
+            throw new RuntimeException('Este cliente ja esta vinculado a outro aluno.');
+        }
+
+        $atualizar = $pdo->prepare(
+            'UPDATE Usuario
+             SET nome = :nome, sobrenome = :sobrenome, telefone = :telefone, senhaCriptografada = :senha
+             WHERE idUsuario = :idUsuario'
+        );
+        $atualizar->execute([
+            'nome' => $nomes['nome'],
+            'sobrenome' => $nomes['sobrenome'],
+            'telefone' => $telefone,
+            'senha' => senha_criptografada($senha),
+            'idUsuario' => $usuarioExistente['idUsuario'],
+        ]);
+
+        return (int) $usuarioExistente['idUsuario'];
+    }
+
+    $inserir = $pdo->prepare(
+        "INSERT INTO Usuario (nome, sobrenome, cpf, email, telefone, senhaCriptografada, perfil)
+         VALUES (:nome, :sobrenome, :cpf, :email, :telefone, :senha, 'CLIENTE')"
+    );
+    $inserir->execute([
+        'nome' => $nomes['nome'],
+        'sobrenome' => $nomes['sobrenome'],
+        'cpf' => $cpf,
+        'email' => $email,
+        'telefone' => $telefone,
+        'senha' => senha_criptografada($senha),
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
 function coletar_dados_formulario(PDO $pdo, array $entidade, ?array $registroAtual, array $usuario): array
 {
     $dados = [];
@@ -172,6 +255,9 @@ function coletar_dados_formulario(PDO $pdo, array $entidade, ?array $registroAtu
         }
 
         if (!empty($campo['virtual'])) {
+            if ($nome === 'senhaCliente') {
+                validar_senha_sistema($valor);
+            }
             continue;
         }
 
@@ -470,6 +556,109 @@ function formatar_valor_listagem(PDO $pdo, array $campo, array $registro): strin
     }
 
     return h($valor ?: 'Não informado');
+}
+
+function campos_exportacao(array $entidade): array
+{
+    return array_values(array_filter(
+        $entidade['campos'],
+        fn (array $campo): bool => ($campo['tabela_listagem'] ?? true) !== false
+    ));
+}
+
+function formatar_valor_exportacao(PDO $pdo, array $campo, array $registro): string
+{
+    $valor = $registro[$campo['nome']] ?? null;
+
+    if (!empty($campo['relacao'])) {
+        return rotulo_relacao($pdo, $campo, $valor);
+    }
+
+    if (!empty($campo['dinheiro'])) {
+        return dinheiro($valor);
+    }
+
+    if (($campo['tipo'] ?? '') === 'date') {
+        return data_br($valor);
+    }
+
+    if ($campo['nome'] === 'mesReferencia') {
+        return nome_mes($valor);
+    }
+
+    if ($campo['nome'] === 'plano') {
+        return rotulo_plano($valor);
+    }
+
+    return (string) ($valor ?: 'Nao informado');
+}
+
+function valor_csv_seguro(mixed $valor): string
+{
+    $texto = trim(str_replace(["\r\n", "\r", "\n"], ' ', (string) $valor));
+
+    if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+        return "'" . $texto;
+    }
+
+    return $texto;
+}
+
+function nome_arquivo_exportacao(array $entidade): string
+{
+    $titulo = (string) ($entidade['titulo'] ?? 'registros');
+    $normalizado = function_exists('iconv') ? iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $titulo) : $titulo;
+
+    if ($normalizado === false || $normalizado === '') {
+        $normalizado = 'registros';
+    }
+
+    $normalizado = strtolower((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $normalizado));
+    $normalizado = trim($normalizado, '-');
+
+    return 'nexus-' . ($normalizado ?: 'registros') . '-' . date('Y-m-d') . '.csv';
+}
+
+function exportar_registros_csv(PDO $pdo, array $entidade, array $registros): void
+{
+    $campos = campos_exportacao($entidade);
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="' . nome_arquivo_exportacao($entidade) . '"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    $saida = fopen('php://output', 'w');
+    if ($saida === false) {
+        throw new RuntimeException('Nao foi possivel gerar o arquivo de exportacao.');
+    }
+
+    fwrite($saida, "\xEF\xBB\xBF");
+    fputcsv($saida, array_map('valor_csv_seguro', array_merge(['ID'], array_column($campos, 'rotulo'))), ';', '"', '\\');
+
+    foreach ($registros as $registro) {
+        $linha = [valor_csv_seguro($registro[$entidade['id']] ?? '')];
+
+        foreach ($campos as $campo) {
+            $linha[] = valor_csv_seguro(formatar_valor_exportacao($pdo, $campo, $registro));
+        }
+
+        fputcsv($saida, $linha, ';', '"', '\\');
+    }
+
+    fclose($saida);
+    exit;
+}
+
+function url_exportacao_atual(string $busca): string
+{
+    $parametros = ['exportar' => 'csv'];
+
+    if ($busca !== '') {
+        $parametros['busca'] = $busca;
+    }
+
+    return basename($_SERVER['PHP_SELF']) . '?' . http_build_query($parametros);
 }
 
 function configuracao_tela_crud(array $entidade, array $usuario): array
@@ -797,6 +986,9 @@ function renderizar_campo(PDO $pdo, array $campo, ?array $registro, array $usuar
     $tipo = $campo['tipo'] ?? 'text';
     $editandoSenha = $nome === 'senhaCriptografada' && $registro !== null;
     $valor = $editandoSenha ? '' : (string) ($registro[$nome] ?? valor_padrao_campo($campo));
+    if ($nome === 'responsavelCadastro') {
+        $valor = trim((string) ($usuario['nome'] ?? '') . ' ' . (string) ($usuario['sobrenome'] ?? ''));
+    }
     $obrigatorio = !empty($campo['obrigatorio']) && !$editandoSenha ? 'required' : '';
     $somenteLeitura = !empty($campo['somente_leitura']) ? 'readonly' : '';
     $classe = !empty($campo['completo']) || $tipo === 'textarea' ? 'field full' : 'field';
@@ -896,17 +1088,24 @@ function executar_pagina_crud(array $entidade): void
                 $dados = coletar_dados_formulario($pdo, $entidade, $registroAtual, $usuario);
                 $novoAlunoAtendente = !$id && $entidade['tabela'] === 'Aluno' && $usuario['perfil'] === 'ATENDENTE';
                 $planoAluno = (string) ($_POST['planoAluno'] ?? 'Basico');
+                $senhaCliente = (string) ($_POST['senhaCliente'] ?? '');
 
-                executar_em_transacao($pdo, function () use ($pdo, $entidade, $id, $dados, $usuario, $novoAlunoAtendente, $planoAluno): void {
-                    $idSalvo = salvar_registro($pdo, $entidade, $id ?: null, $dados);
+                executar_em_transacao($pdo, function () use ($pdo, $entidade, $id, $dados, $usuario, $novoAlunoAtendente, $planoAluno, $senhaCliente): void {
+                    $dadosAluno = $dados;
 
                     if ($novoAlunoAtendente) {
-                        criar_matricula_inicial_aluno($pdo, $idSalvo, $dados, $usuario, $planoAluno);
+                        $dadosAluno['idUsuario'] = criar_usuario_cliente_para_aluno($pdo, $dadosAluno, $senhaCliente);
+                    }
+
+                    $idSalvo = salvar_registro($pdo, $entidade, $id ?: null, $dadosAluno);
+
+                    if ($novoAlunoAtendente) {
+                        criar_matricula_inicial_aluno($pdo, $idSalvo, $dadosAluno, $usuario, $planoAluno);
                     }
                 });
                 $texto = $id
                     ? 'Registro atualizado com sucesso.'
-                    : ($novoAlunoAtendente ? 'Aluno cadastrado e matricula criada com sucesso.' : 'Registro cadastrado com sucesso.');
+                    : ($novoAlunoAtendente ? 'Aluno cadastrado, acesso do cliente e matricula criados com sucesso.' : 'Registro cadastrado com sucesso.');
                 header('Location: ' . basename($_SERVER['PHP_SELF']) . '?mensagem=' . urlencode($texto) . '&tipo=success');
                 exit;
             }
@@ -947,6 +1146,10 @@ function executar_pagina_crud(array $entidade): void
     if ($busca !== '') {
         $buscaNormalizada = mb_strtolower($busca, 'UTF-8');
         $registros = array_filter($registros, fn ($registro) => str_contains(texto_busca_registro($pdo, $entidade, $registro), $buscaNormalizada));
+    }
+
+    if (($_GET['exportar'] ?? '') === 'csv') {
+        exportar_registros_csv($pdo, $entidade, $registros);
     }
 
     cabecalho_pagina($entidade['titulo'], $entidade['secao'], $usuario);
@@ -1002,6 +1205,10 @@ function executar_pagina_crud(array $entidade): void
               Cadastrar <?= h($entidade['singular']) ?>
             </a>
           <?php endif; ?>
+          <a class="btn btn-ghost" href="<?= h(url_exportacao_atual($busca)) ?>">
+            <span class="material-symbols-outlined" aria-hidden="true">download</span>
+            Exportar CSV
+          </a>
           <form class="field search-field" method="get">
             <label for="busca">Busca</label>
             <input id="busca" name="busca" type="search" value="<?= h($busca) ?>" placeholder="Buscar registros...">
