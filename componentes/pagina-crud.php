@@ -52,6 +52,11 @@ function perfil_somente_leitura(array $entidade, array $usuario): bool
     return in_array($usuario['perfil'], $entidade['somente_leitura_perfis'] ?? [], true);
 }
 
+function filtro_sql_entidade(array $entidade): string
+{
+    return trim((string) ($entidade['filtro_sql'] ?? ''));
+}
+
 function usuario_pode_acessar_registro(array $entidade, array $usuario, ?array $registro): bool
 {
     if (!$registro) {
@@ -89,7 +94,14 @@ function buscar_registro(PDO $pdo, array $entidade, mixed $id): ?array
         return null;
     }
 
-    $consulta = $pdo->prepare("SELECT * FROM {$entidade['tabela']} WHERE {$entidade['id']} = :id");
+    $sql = "SELECT * FROM {$entidade['tabela']} WHERE {$entidade['id']} = :id";
+    $filtro = filtro_sql_entidade($entidade);
+
+    if ($filtro !== '') {
+        $sql .= " AND ({$filtro})";
+    }
+
+    $consulta = $pdo->prepare($sql);
     $consulta->execute(['id' => $id]);
     $registro = $consulta->fetch();
 
@@ -280,6 +292,10 @@ function coletar_dados_formulario(PDO $pdo, array $entidade, ?array $registroAtu
         } else {
             $dados[$nome] = $valor === '' ? null : $valor;
         }
+    }
+
+    foreach (($entidade['valores_fixos'] ?? []) as $campo => $valor) {
+        $dados[$campo] = $valor;
     }
 
     if ($entidade['tabela'] === 'RelatorioFinanceiro') {
@@ -498,17 +514,31 @@ function mensagem_erro_operacao(Throwable $erro): string
 
 function listar_registros(PDO $pdo, array $entidade, array $usuario): array
 {
-    if ($entidade['tabela'] === 'SolicitacaoSuporte' && $usuario['perfil'] !== 'ADMIN') {
-        $consulta = $pdo->prepare(
-            "SELECT * FROM {$entidade['tabela']}
-             WHERE idUsuarioSolicitante = :idUsuario
-             ORDER BY {$entidade['ordem']}"
-        );
-        $consulta->execute(['idUsuario' => $usuario['idUsuario']]);
-        return $consulta->fetchAll();
+    $condicoes = [];
+    $parametros = [];
+    $filtro = filtro_sql_entidade($entidade);
+
+    if ($filtro !== '') {
+        $condicoes[] = "({$filtro})";
     }
 
-    return $pdo->query("SELECT * FROM {$entidade['tabela']} ORDER BY {$entidade['ordem']}")->fetchAll();
+    if ($entidade['tabela'] === 'SolicitacaoSuporte' && $usuario['perfil'] !== 'ADMIN') {
+        $condicoes[] = 'idUsuarioSolicitante = :idUsuario';
+        $parametros['idUsuario'] = $usuario['idUsuario'];
+    }
+
+    $sql = "SELECT * FROM {$entidade['tabela']}";
+
+    if ($condicoes) {
+        $sql .= ' WHERE ' . implode(' AND ', $condicoes);
+    }
+
+    $sql .= " ORDER BY {$entidade['ordem']}";
+
+    $consulta = $pdo->prepare($sql);
+    $consulta->execute($parametros);
+
+    return $consulta->fetchAll();
 }
 
 function texto_busca_registro(PDO $pdo, array $entidade, array $registro): string

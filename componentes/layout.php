@@ -23,9 +23,11 @@ function menu_por_perfil(string $perfil): array
             ['secao' => 'receitas', 'rotulo' => 'Receitas', 'icone' => 'trending_up', 'url' => 'paginas/receitas.php'],
             ['secao' => 'despesas', 'rotulo' => 'Despesas', 'icone' => 'trending_down', 'url' => 'paginas/despesas.php'],
             ['secao' => 'relatorios', 'rotulo' => 'Relatorios', 'icone' => 'monitoring', 'url' => 'paginas/relatorios-financeiros.php'],
+            ['secao' => 'atendentes', 'rotulo' => 'Atendentes', 'icone' => 'groups', 'url' => 'paginas/atendentes.php'],
             ['secao' => 'alunos', 'rotulo' => 'Alunos', 'icone' => 'fitness_center', 'url' => 'paginas/alunos.php'],
             ['secao' => 'matriculas', 'rotulo' => 'Matriculas', 'icone' => 'badge', 'url' => 'paginas/matriculas.php'],
             ['secao' => 'mensalidades', 'rotulo' => 'Mensalidades', 'icone' => 'payments', 'url' => 'paginas/mensalidades.php'],
+            ['secao' => 'suporte', 'rotulo' => 'Suporte', 'icone' => 'support_agent', 'url' => 'paginas/solicitacoes-suporte.php'],
             ['secao' => 'configuracoes', 'rotulo' => 'Configuracoes', 'icone' => 'settings', 'url' => 'configuracoes.php'],
         ],
         'ATENDENTE' => [

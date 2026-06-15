@@ -20,13 +20,14 @@ Desenvolver um sistema web CRUD funcional capaz de cadastrar, consultar, editar 
 | Perfil | Funcao |
 | --- | --- |
 | ADMIN | Gerencia usuarios e academias, audita alunos, matriculas, mensalidades e relatorios, visualiza suporte e acessa configuracoes gerais. |
-| GERENTE | Visualiza dashboard financeiro, gerencia receitas, despesas e relatorios financeiros, e consulta alunos, matriculas e mensalidades. |
+| GERENTE | Visualiza dashboard financeiro, gerencia receitas, despesas, relatorios financeiros e atendentes, consulta alunos, matriculas e mensalidades, e abre solicitacoes de suporte para o ADMIN. |
 | ATENDENTE | Cadastra alunos, matriculas e mensalidades, consulta pagamentos e abre ou acompanha solicitacoes de suporte. |
 | CLIENTE | Representa o aluno da academia. Consulta seus dados, matricula, mensalidades e historico em paginas separadas, alem de abrir suporte. |
 
 ## CRUDs implementados
 
 - Usuarios
+- Atendentes
 - Academias
 - Alunos
 - Matriculas
