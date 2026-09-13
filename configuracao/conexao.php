@@ -175,6 +175,33 @@ function ajustar_matricula_planos(PDO $pdo): void
     }
 }
 
+function ajustar_responsavel_academia(PDO $pdo): void
+{
+    if (!tabela_existe($pdo, 'Academia') || !tabela_existe($pdo, 'Usuario')) {
+        return;
+    }
+
+    if (!coluna_existe($pdo, 'Academia', 'idResponsavel')) {
+        $pdo->exec('ALTER TABLE Academia ADD idResponsavel INT NULL AFTER endereco');
+    }
+
+    $pdo->exec(
+        "UPDATE Academia
+         SET idResponsavel = (SELECT idUsuario FROM Usuario WHERE perfil = 'GERENTE' ORDER BY idUsuario LIMIT 1)
+         WHERE idResponsavel IS NULL"
+    );
+
+    if (regra_exclusao_chave($pdo, 'Academia', 'fk_academia_responsavel') === null) {
+        $pdo->exec(
+            'ALTER TABLE Academia
+             ADD CONSTRAINT fk_academia_responsavel
+             FOREIGN KEY (idResponsavel) REFERENCES Usuario(idUsuario)
+             ON UPDATE CASCADE
+             ON DELETE SET NULL'
+        );
+    }
+}
+
 function aplicar_migracoes(PDO $pdo): void
 {
     static $executado = false;
@@ -187,6 +214,7 @@ function aplicar_migracoes(PDO $pdo): void
     ajustar_chave_usuario_opcional($pdo, 'Matricula', 'idAtendente', 'fk_matricula_atendente');
     ajustar_chave_usuario_opcional($pdo, 'RelatorioFinanceiro', 'idGerente', 'fk_relatorio_gerente');
     ajustar_chave_usuario_opcional($pdo, 'SolicitacaoSuporte', 'idUsuarioSolicitante', 'fk_suporte_usuario');
+    ajustar_responsavel_academia($pdo);
     ajustar_matricula_planos($pdo);
 }
 

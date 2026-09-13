@@ -437,6 +437,7 @@ function excluir_usuario_acesso(PDO $pdo, int $id): void
 {
     executar_em_transacao($pdo, function () use ($pdo, $id): void {
         $comandos = [
+            'UPDATE Academia SET idResponsavel = NULL WHERE idResponsavel = :id',
             'UPDATE Aluno SET idUsuario = NULL WHERE idUsuario = :id',
             'UPDATE Matricula SET idAtendente = NULL WHERE idAtendente = :id',
             'UPDATE RelatorioFinanceiro SET idGerente = NULL WHERE idGerente = :id',

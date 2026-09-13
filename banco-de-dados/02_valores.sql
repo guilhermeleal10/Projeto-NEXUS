@@ -18,7 +18,12 @@ CREATE TABLE IF NOT EXISTS Academia (
   cnpj VARCHAR(18) NOT NULL UNIQUE,
   telefone VARCHAR(20) NOT NULL,
   endereco VARCHAR(255) NOT NULL,
-  criadoEm TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  idResponsavel INT NULL,
+  criadoEm TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_academia_responsavel
+    FOREIGN KEY (idResponsavel) REFERENCES Usuario(idUsuario)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS Aluno (
@@ -156,14 +161,15 @@ CREATE TABLE IF NOT EXISTS SolicitacaoSuporte (
     ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
-INSERT INTO Academia (idAcademia, nome, cnpj, telefone, endereco) VALUES
-(1, 'NEXUS Fit Centro', '12.345.678/0001-90', '(11) 3333-1010', 'Rua Neon, 120 - Centro'),
-(2, 'NEXUS Comunidade Norte', '98.765.432/0001-12', '(11) 3333-2020', 'Av. Movimento, 450 - Zona Norte')
+INSERT INTO Academia (idAcademia, nome, cnpj, telefone, endereco, idResponsavel) VALUES
+(1, 'NEXUS Fit Centro', '12.345.678/0001-90', '(11) 3333-1010', 'Rua Neon, 120 - Centro', 2),
+(2, 'NEXUS Comunidade Norte', '98.765.432/0001-12', '(11) 3333-2020', 'Av. Movimento, 450 - Zona Norte', 2)
 ON DUPLICATE KEY UPDATE
   nome = VALUES(nome),
   cnpj = VALUES(cnpj),
   telefone = VALUES(telefone),
-  endereco = VALUES(endereco);
+  endereco = VALUES(endereco),
+  idResponsavel = VALUES(idResponsavel);
 
 INSERT INTO Aluno (idAluno, idUsuario, nome, cpf, telefone, email, dataNascimento, idAcademia) VALUES
 (1, 4, 'Carlos Diego', '111.111.111-11', '(11) 98888-1111', 'cliente@nexus.com', '1998-04-12', 1),

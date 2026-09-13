@@ -49,6 +49,7 @@ $entidades = [
             ['nome' => 'cnpj', 'rotulo' => 'CNPJ', 'tipo' => 'text', 'obrigatorio' => true],
             ['nome' => 'telefone', 'rotulo' => 'Telefone', 'tipo' => 'tel', 'obrigatorio' => true],
             ['nome' => 'endereco', 'rotulo' => 'Endereco', 'tipo' => 'text', 'obrigatorio' => true, 'completo' => true],
+            ['nome' => 'idResponsavel', 'rotulo' => 'Gerente responsavel', 'tipo' => 'select', 'obrigatorio' => true, 'relacao' => ['tabela' => 'Usuario', 'id' => 'idUsuario', 'rotulo' => "CONCAT(nome, ' ', sobrenome, ' (', email, ')')", 'filtro' => "perfil = 'GERENTE'"]],
         ],
     ],
     'alunos' => [
