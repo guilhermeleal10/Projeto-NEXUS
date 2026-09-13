@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: nexus
+      DB_USER: nexus
+      DB_PASSWORD: nexus_secret
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: nexus
+      MARIADB_USER: nexus
+      MARIADB_PASSWORD: nexus_secret
+      MARIADB_ROOT_PASSWORD: root_secret
+    volumes:
+      - nexus_db_data:/var/lib/mysql
+      - ./banco-de-dados:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  nexus_db_data:

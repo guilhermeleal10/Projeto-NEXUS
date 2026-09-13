@@ -128,3 +128,5 @@ Rotas principais:
 ## Controle de acesso
 
 As paginas usam verificacao de perfil. Um CLIENTE nao acessa CRUD administrativo digitando a URL, um ATENDENTE nao acessa telas financeiras do GERENTE, e um GERENTE nao acessa gerenciamento de usuarios do ADMIN.
+ 
+ http://localhost:8080/entrar.php

@@ -226,12 +226,15 @@ function obter_conexao(): PDO
         return $pdo;
     }
 
-    $host = 'localhost';
-    $banco = 'nexus';
-    $usuario = 'root';
-    $senha = '';
+    // As variaveis permitem usar a mesma aplicacao no XAMPP e no Docker.
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $porta = getenv('DB_PORT') ?: '3306';
+    $banco = getenv('DB_NAME') ?: 'nexus';
+    $usuario = getenv('DB_USER') ?: 'root';
+    $senha = getenv('DB_PASSWORD');
+    $senha = $senha === false ? '' : $senha;
 
-    $dsn = "mysql:host={$host};dbname={$banco};charset=utf8mb4";
+    $dsn = "mysql:host={$host};port={$porta};dbname={$banco};charset=utf8mb4";
 
     try {
         $pdo = new PDO($dsn, $usuario, $senha, [
