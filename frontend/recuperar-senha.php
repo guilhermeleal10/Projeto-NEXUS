@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/configuracao/autenticacao.php';
+require_once __DIR__ . '/../backend/configuracao/autenticacao.php';
 
 $pdo = obter_conexao();
 $erro = '';
@@ -99,25 +99,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>try { if (localStorage.getItem('nexus-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}</script>
   <link rel="stylesheet" href="recursos/css/estilo.css?v=<?= h($versaoEstilo) ?>">
   <link id="styleContraste" rel="stylesheet" href="recursos/css/style.css?v=<?= h($versaoContraste) ?>" data-acessibilidade-css-base="recursos/css/">
 </head>
 <body class="login-body">
   <a class="skip-link" href="#conteudo-principal">Ir para o conteudo</a>
-  <div class="accessibility-tools login-accessibility" role="toolbar" aria-label="Acessibilidade">
-    <button class="accessibility-btn" type="button" data-acessibilidade-fonte="menos" aria-label="Diminuir fonte" title="Diminuir fonte">
-      <span class="material-symbols-outlined" aria-hidden="true">text_decrease</span>
+
+  <div class="floating-preferences" aria-label="Preferências de aparência e acessibilidade">
+    <button class="floating-action theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Ativar tema claro" title="Ativar tema claro">
+      <span class="material-symbols-outlined" data-theme-icon aria-hidden="true">light_mode</span>
+      <span class="sr-only" data-theme-label>Ativar tema claro</span>
     </button>
-    <button class="accessibility-btn" type="button" data-acessibilidade-fonte="resetar" aria-label="Restaurar fonte" title="Restaurar fonte">
-      <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+    <button class="floating-action accessibility-launcher" type="button" data-accessibility-toggle aria-expanded="false" aria-controls="accessibility-panel" aria-label="Abrir painel de acessibilidade" title="Acessibilidade">
+      <span class="material-symbols-outlined" aria-hidden="true">accessibility_new</span>
     </button>
-    <button class="accessibility-btn" type="button" data-acessibilidade-fonte="mais" aria-label="Aumentar fonte" title="Aumentar fonte">
-      <span class="material-symbols-outlined" aria-hidden="true">text_increase</span>
-    </button>
-    <button class="accessibility-btn" id="mudaEstilo" type="button" data-acessibilidade-contraste aria-label="Ativar alto contraste" aria-pressed="false" title="Alto contraste">
-      <span class="material-symbols-outlined" aria-hidden="true">contrast</span>
-    </button>
+    <section class="accessibility-panel" id="accessibility-panel" data-accessibility-panel hidden aria-labelledby="accessibility-panel-title">
+      <header class="accessibility-panel-header">
+        <div>
+          <span class="accessibility-panel-kicker">NEXUS / PREFERÊNCIAS</span>
+          <h2 id="accessibility-panel-title">Acessibilidade</h2>
+        </div>
+        <button class="accessibility-close" type="button" data-accessibility-close aria-label="Fechar painel de acessibilidade" title="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+      <p class="accessibility-panel-description">Personalize a leitura e o contraste da interface.</p>
+      <div class="accessibility-panel-controls" role="toolbar" aria-label="Opções de acessibilidade">
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="menos" aria-label="Diminuir fonte" title="Diminuir fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">text_decrease</span><span class="accessibility-control-label">Diminuir texto</span>
+        </button>
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="resetar" aria-label="Restaurar fonte" title="Restaurar fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span><span class="accessibility-control-label">Texto padrão</span>
+        </button>
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="mais" aria-label="Aumentar fonte" title="Aumentar fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">text_increase</span><span class="accessibility-control-label">Aumentar texto</span>
+        </button>
+        <button class="accessibility-btn" id="mudaEstilo" type="button" data-acessibilidade-contraste aria-label="Ativar alto contraste" aria-pressed="false" title="Ativar alto contraste">
+          <span class="material-symbols-outlined" aria-hidden="true">contrast</span><span class="accessibility-control-label">Alto contraste</span>
+        </button>
+      </div>
+      <p class="accessibility-panel-footnote">As preferências ficam salvas neste navegador.</p>
+    </section>
   </div>
+
 
   <main id="conteudo-principal" class="login-card recover-card" aria-labelledby="recover-title">
     <header>

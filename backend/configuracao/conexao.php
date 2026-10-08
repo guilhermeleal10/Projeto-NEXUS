@@ -248,7 +248,7 @@ function obter_conexao(): PDO
     } catch (PDOException $erro) {
         exibir_erro_banco(
             'Banco de dados nao preparado',
-            'Importe primeiro <strong>banco-de-dados/01_usuarios.sql</strong> e depois <strong>banco-de-dados/02_valores.sql</strong> no phpMyAdmin.'
+            'Importe primeiro <strong>backend/banco-de-dados/01_usuarios.sql</strong> e depois <strong>backend/banco-de-dados/02_valores.sql</strong> no phpMyAdmin.'
         );
     }
 

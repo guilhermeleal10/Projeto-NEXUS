@@ -6,7 +6,7 @@ Com o Docker Desktop em execucao, rode na pasta do projeto:
 docker compose up --build
 ```
 
-Abra http://localhost:8080. Os scripts em `banco-de-dados/` sao importados
+Abra http://localhost:8080. Os scripts em `backend/banco-de-dados/` sao importados
 automaticamente somente na primeira criacao do banco.
 
 Para encerrar os containers:

@@ -24,7 +24,7 @@ services:
       MARIADB_ROOT_PASSWORD: root_secret
     volumes:
       - nexus_db_data:/var/lib/mysql
-      - ./banco-de-dados:/docker-entrypoint-initdb.d:ro
+      - ./backend/banco-de-dados:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s

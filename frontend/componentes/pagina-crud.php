@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../configuracao/autenticacao.php';
-require_once __DIR__ . '/../configuracao/entidades.php';
+require_once __DIR__ . '/../../backend/configuracao/autenticacao.php';
+require_once __DIR__ . '/../../backend/configuracao/entidades.php';
 require_once __DIR__ . '/layout.php';
 
 function opcoes_campo(PDO $pdo, array $campo): array

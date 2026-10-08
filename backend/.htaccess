@@ -1,0 +1,3 @@
+# Os arquivos de configuração e scripts SQL são usados pelo PHP/servidor,
+# mas não devem ser disponibilizados diretamente por HTTP.
+Require all denied

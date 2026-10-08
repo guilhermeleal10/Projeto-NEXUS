@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../configuracao/autenticacao.php';
+require_once __DIR__ . '/../../backend/configuracao/autenticacao.php';
 
 function menu_por_perfil(string $perfil): array
 {
@@ -92,6 +92,7 @@ function cabecalho_pagina(string $titulo, string $secao, array $usuario): void
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Material+Symbols+Outlined:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>try { if (localStorage.getItem('nexus-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}</script>
   <link rel="stylesheet" href="<?= h($base) ?>recursos/css/estilo.css?v=<?= h($versaoEstilo) ?>">
   <link id="styleContraste" rel="stylesheet" href="<?= h($base) ?>recursos/css/style.css?v=<?= h($versaoContraste) ?>" data-acessibilidade-css-base="<?= h($base) ?>recursos/css/">
 </head>
@@ -133,20 +134,6 @@ function cabecalho_pagina(string $titulo, string $secao, array $usuario): void
       </button>
       <h1><?= h($titulo) ?></h1>
       <div class="topbar-actions">
-        <div class="accessibility-tools" role="toolbar" aria-label="Acessibilidade">
-          <button class="accessibility-btn" type="button" data-acessibilidade-fonte="menos" aria-label="Diminuir fonte" title="Diminuir fonte">
-            <span class="material-symbols-outlined" aria-hidden="true">text_decrease</span>
-          </button>
-          <button class="accessibility-btn" type="button" data-acessibilidade-fonte="resetar" aria-label="Restaurar fonte" title="Restaurar fonte">
-            <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
-          </button>
-          <button class="accessibility-btn" type="button" data-acessibilidade-fonte="mais" aria-label="Aumentar fonte" title="Aumentar fonte">
-            <span class="material-symbols-outlined" aria-hidden="true">text_increase</span>
-          </button>
-          <button class="accessibility-btn" id="mudaEstilo" type="button" data-acessibilidade-contraste aria-label="Ativar alto contraste" aria-pressed="false" title="Alto contraste">
-            <span class="material-symbols-outlined" aria-hidden="true">contrast</span>
-          </button>
-        </div>
         <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
         <a href="<?= h($base . $urlConfiguracoes) ?>" aria-label="Configuracoes">
           <span class="material-symbols-outlined" aria-hidden="true">settings</span>
@@ -172,6 +159,44 @@ function rodape_pagina(): void
     ?>
     </main>
   </div>
+
+  <div class="floating-preferences" aria-label="Preferências de aparência e acessibilidade">
+    <button class="floating-action theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Ativar tema claro" title="Ativar tema claro">
+      <span class="material-symbols-outlined" data-theme-icon aria-hidden="true">light_mode</span>
+      <span class="sr-only" data-theme-label>Ativar tema claro</span>
+    </button>
+    <button class="floating-action accessibility-launcher" type="button" data-accessibility-toggle aria-expanded="false" aria-controls="accessibility-panel" aria-label="Abrir painel de acessibilidade" title="Acessibilidade">
+      <span class="material-symbols-outlined" aria-hidden="true">accessibility_new</span>
+    </button>
+    <section class="accessibility-panel" id="accessibility-panel" data-accessibility-panel hidden aria-labelledby="accessibility-panel-title">
+      <header class="accessibility-panel-header">
+        <div>
+          <span class="accessibility-panel-kicker">NEXUS / PREFERÊNCIAS</span>
+          <h2 id="accessibility-panel-title">Acessibilidade</h2>
+        </div>
+        <button class="accessibility-close" type="button" data-accessibility-close aria-label="Fechar painel de acessibilidade" title="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+      <p class="accessibility-panel-description">Personalize a leitura e o contraste da interface.</p>
+      <div class="accessibility-panel-controls" role="toolbar" aria-label="Opções de acessibilidade">
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="menos" aria-label="Diminuir fonte" title="Diminuir fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">text_decrease</span><span class="accessibility-control-label">Diminuir texto</span>
+        </button>
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="resetar" aria-label="Restaurar fonte" title="Restaurar fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span><span class="accessibility-control-label">Texto padrão</span>
+        </button>
+        <button class="accessibility-btn" type="button" data-acessibilidade-fonte="mais" aria-label="Aumentar fonte" title="Aumentar fonte">
+          <span class="material-symbols-outlined" aria-hidden="true">text_increase</span><span class="accessibility-control-label">Aumentar texto</span>
+        </button>
+        <button class="accessibility-btn" id="mudaEstilo" type="button" data-acessibilidade-contraste aria-label="Ativar alto contraste" aria-pressed="false" title="Ativar alto contraste">
+          <span class="material-symbols-outlined" aria-hidden="true">contrast</span><span class="accessibility-control-label">Alto contraste</span>
+        </button>
+      </div>
+      <p class="accessibility-panel-footnote">As preferências ficam salvas neste navegador.</p>
+    </section>
+  </div>
+
   <script src="<?= h($base) ?>recursos/js/aplicacao.js?v=<?= h($versaoAplicacao) ?>"></script>
   <script src="<?= h($base) ?>recursos/js/acessibilidade.js?v=<?= h($versaoAcessibilidade) ?>"></script>
 </body>
